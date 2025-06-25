@@ -2,6 +2,15 @@
 
 [![CI/CD Pipeline](https://github.com/ChiragMorajkar03/FlowZen-AI-Workflow-Automation-01/actions/workflows/ci.yml/badge.svg)](https://github.com/ChiragMorajkar03/FlowZen-AI-Workflow-Automation-01/actions/workflows/ci.yml)
 
+## 🛠️ Technologies Used
+
+![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+
 ![Flowzen Banner](https://via.placeholder.com/1200x300?text=Flowzen+Automation+Platform)
 
 Flowzen is a powerful no-code automation platform that allows users to create, manage, and deploy automated workflows connecting various services like Discord, Slack, Notion, and Google services. With an intuitive visual builder and AI-powered workflow generation, Flowzen makes automation accessible to everyone.
