@@ -1,0 +1,273 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  clerkId      String  @unique
+  name         String?
+  email        String  @unique
+  profileImage String?
+  tier         String? @default("Free")
+  credits      String? @default("10")
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  localGoogleId    String?  @unique
+  googleResourceId String?  @unique
+
+  LocalGoogleCredential LocalGoogleCredential?
+  DiscordWebhook        DiscordWebhook[]
+  Notion                Notion[]
+  Slack                 Slack[]
+  Email                 Email[]
+  GitHub                GitHub[]
+  connections           Connections[]
+  workflows             Workflows[]
+  
+  // Team collaboration
+  ownedTeams     Team[]        @relation("TeamOwner")
+  memberTeams    TeamMember[]
+  assignedTasks  Task[]        @relation("TaskAssignee")
+  createdTasks   Task[]        @relation("TaskCreator")
+  comments       Comment[]
+  notifications  Notification[]
+}
+
+model LocalGoogleCredential {
+  id          String @id @default(uuid())
+  accessToken String @unique
+
+  folderId   String?
+  pageToken  String?
+  channelId  String  @unique @default(uuid())
+  subscribed Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
+}
+
+model DiscordWebhook {
+  id          String        @id @default(uuid())
+  webhookId   String        @unique
+  url         String        @unique
+  name        String
+  guildName   String
+  guildId     String
+  channelId   String        @unique
+  user        User          @relation(fields: [userId], references: [clerkId])
+  userId      String
+  connections Connections[]
+}
+
+model Slack {
+  id String @id @default(uuid())
+
+  appId            String
+  authedUserId     String
+  authedUserToken  String @unique
+  slackAccessToken String @unique
+  botUserId        String
+  teamId           String
+  teamName         String
+
+  User        User          @relation(fields: [userId], references: [clerkId])
+  userId      String
+  connections Connections[]
+}
+
+model Notion {
+  id            String        @id @default(uuid())
+  accessToken   String        @unique
+  workspaceId   String        @unique
+  databaseId    String        @unique
+  workspaceName String
+  workspaceIcon String
+  User          User          @relation(fields: [userId], references: [clerkId])
+  userId        String
+  connections   Connections[]
+}
+
+model Email {
+  id String @id @default(uuid())
+  emailAddress String @unique
+  smtpHost String?
+  smtpPort Int?
+  smtpUser String?
+  smtpPass String?
+  User User @relation(fields: [userId], references: [clerkId])
+  userId String
+  connections Connections[]
+}
+
+model GitHub {
+  id String @id @default(uuid())
+  accessToken String @unique
+  username String
+  User User @relation(fields: [userId], references: [clerkId])
+  userId String
+  connections Connections[]
+}
+
+model Connections {
+  id               String          @id @default(uuid())
+  type             String          @unique
+  DiscordWebhook   DiscordWebhook? @relation(fields: [discordWebhookId], references: [id])
+  discordWebhookId String?
+  Notion           Notion?         @relation(fields: [notionId], references: [id])
+  notionId         String?
+  User             User?           @relation(fields: [userId], references: [clerkId])
+  userId           String?
+  Slack            Slack?          @relation(fields: [slackId], references: [id])
+  slackId          String?
+  Email            Email?          @relation(fields: [emailId], references: [id])
+  emailId          String?
+  GitHub           GitHub?         @relation(fields: [githubId], references: [id])
+  githubId         String?
+}
+
+model Workflows {
+  id                String   @id @default(uuid())
+  nodes             String?
+  edges             String?
+  name              String
+  discordTemplate   String?
+  notionTemplate    String?
+  slackTemplate     String?
+  emailTemplate     String?
+  githubTemplate    String?
+  slackChannels     String[]
+  slackAccessToken  String?
+  notionAccessToken String?
+  notionDbId        String?
+  emailConfig       String?
+  githubConfig      String?
+  flowPath          String?
+  cronPath          String?
+  publish           Boolean? @default(false)
+  description       String
+  User              User     @relation(fields: [userId], references: [clerkId])
+  userId            String
+  
+  // Team collaboration
+  team              Team?    @relation(fields: [teamId], references: [id])
+  teamId            String?
+  tasks             Task[]
+  isTemplate        Boolean  @default(false)
+  visibility        String   @default("private") // private, team, public
+  lastModified      DateTime @default(now()) @updatedAt
+}// Team Collaboration Models
+model Team {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Team settings
+  avatarUrl   String?
+  inviteCode  String?  @unique
+  
+  // Relations
+  owner       User     @relation("TeamOwner", fields: [ownerId], references: [clerkId])
+  ownerId     String
+  members     TeamMember[]
+  workflows   Workflows[]
+  projects    Project[]
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  role      String   @default("member") // owner, admin, member
+  joinedAt  DateTime @default(now())
+  
+  // Relations
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId    String
+  user      User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+  userId    String
+  
+  // Permissions
+  canCreateWorkflows Boolean @default(false)
+  canEditWorkflows   Boolean @default(false)
+  canDeleteWorkflows Boolean @default(false)
+  canInviteMembers   Boolean @default(false)
+  canManageRoles     Boolean @default(false)
+  
+  @@unique([teamId, userId])
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  startDate   DateTime?
+  dueDate     DateTime?
+  status      String   @default("planning") // planning, active, completed, on-hold
+  
+  // Relations
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId      String
+  tasks       Task[]
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  dueDate     DateTime?
+  status      String   @default("todo") // todo, in-progress, review, completed
+  priority    String   @default("medium") // low, medium, high, urgent
+  
+  // Relations
+  project     Project? @relation(fields: [projectId], references: [id])
+  projectId   String?
+  workflow    Workflows? @relation(fields: [workflowId], references: [id])
+  workflowId  String?
+  assignee    User?    @relation("TaskAssignee", fields: [assigneeId], references: [clerkId])
+  assigneeId  String?
+  creator     User     @relation("TaskCreator", fields: [creatorId], references: [clerkId])
+  creatorId   String
+  comments    Comment[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId    String
+  user      User     @relation(fields: [userId], references: [clerkId])
+  userId    String
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String   // task-assigned, comment-added, workflow-shared, etc.
+  content   String
+  createdAt DateTime @default(now())
+  read      Boolean  @default(false)
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+  userId    String
+}

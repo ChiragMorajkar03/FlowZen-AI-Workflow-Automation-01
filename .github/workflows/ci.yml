@@ -1,0 +1,57 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Lint
+      run: npm run lint || true
+    
+    - name: Type check
+      run: npx tsc --noEmit
+    
+    - name: Build
+      run: npm run build
+    
+    - name: Run tests
+      run: npm test || true
+      env:
+        CI: true
+
+  deploy:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy to production
+      # Replace this step with your actual deployment process
+      # This is just a placeholder to show where deployment would happen
+      run: |
+        echo "Deployment would happen here"
+        # Examples:
+        # - Vercel deployment
+        # - AWS deployment
+        # - Docker image build and push

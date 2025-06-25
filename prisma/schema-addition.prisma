@@ -1,0 +1,103 @@
+// Team Collaboration Models
+model Team {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Team settings
+  avatarUrl   String?
+  inviteCode  String?  @unique
+  
+  // Relations
+  owner       User     @relation("TeamOwner", fields: [ownerId], references: [clerkId])
+  ownerId     String
+  members     TeamMember[]
+  workflows   Workflows[]
+  projects    Project[]
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  role      String   @default("member") // owner, admin, member
+  joinedAt  DateTime @default(now())
+  
+  // Relations
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId    String
+  user      User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+  userId    String
+  
+  // Permissions
+  canCreateWorkflows Boolean @default(false)
+  canEditWorkflows   Boolean @default(false)
+  canDeleteWorkflows Boolean @default(false)
+  canInviteMembers   Boolean @default(false)
+  canManageRoles     Boolean @default(false)
+  
+  @@unique([teamId, userId])
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  startDate   DateTime?
+  dueDate     DateTime?
+  status      String   @default("planning") // planning, active, completed, on-hold
+  
+  // Relations
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId      String
+  tasks       Task[]
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  dueDate     DateTime?
+  status      String   @default("todo") // todo, in-progress, review, completed
+  priority    String   @default("medium") // low, medium, high, urgent
+  
+  // Relations
+  project     Project? @relation(fields: [projectId], references: [id])
+  projectId   String?
+  workflow    Workflows? @relation(fields: [workflowId], references: [id])
+  workflowId  String?
+  assignee    User?    @relation("TaskAssignee", fields: [assigneeId], references: [clerkId])
+  assigneeId  String?
+  creator     User     @relation("TaskCreator", fields: [creatorId], references: [clerkId])
+  creatorId   String
+  comments    Comment[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId    String
+  user      User     @relation(fields: [userId], references: [clerkId])
+  userId    String
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String   // task-assigned, comment-added, workflow-shared, etc.
+  content   String
+  createdAt DateTime @default(now())
+  read      Boolean  @default(false)
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+  userId    String
+}
