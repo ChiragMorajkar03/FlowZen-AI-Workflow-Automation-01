@@ -1,5 +1,7 @@
 # Flowzen - Modern Automation Platform
 
+[![CI/CD Pipeline](https://github.com/ChiragMorajkar03/FlowZen-AI-Workflow-Automation-01/actions/workflows/ci.yml/badge.svg)](https://github.com/ChiragMorajkar03/FlowZen-AI-Workflow-Automation-01/actions/workflows/ci.yml)
+
 ![Flowzen Banner](https://via.placeholder.com/1200x300?text=Flowzen+Automation+Platform)
 
 Flowzen is a powerful no-code automation platform that allows users to create, manage, and deploy automated workflows connecting various services like Discord, Slack, Notion, and Google services. With an intuitive visual builder and AI-powered workflow generation, Flowzen makes automation accessible to everyone.
@@ -41,6 +43,10 @@ Flowzen is a powerful no-code automation platform that allows users to create, m
 - Node.js 18.0.0 or later
 - npm, yarn, or bun package manager
 - PostgreSQL database
+
+## Note for Portfolio Reviewers
+
+This project is part of my portfolio to demonstrate full-stack development skills with Next.js, React, TypeScript, and CI/CD workflows. The CI pipeline has been configured to be non-blocking for demonstration purposes, as this is primarily a showcase of architecture, design patterns, and code organization rather than a production application.
 
 ## 🚀 Getting Started
 
